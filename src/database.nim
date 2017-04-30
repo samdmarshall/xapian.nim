@@ -1,12 +1,17 @@
 
-import "types.nim"
 import "cpp/string.nim"
+import "cpp/ostream.nim"
+
+import "types.nim"
+import "document.nim"
+import "compactor.nim"
 import "termiterator.nim"
 import "valueiterator.nim"
 import "postingiterator.nim"
 
 type
   Database* {.header: "xapian/database.h", importcpp: "Xapian::Database".} = object
+  WritableDatabase* {.header: "xapian/database.h", importcpp: "Xapian::WritableDatabase".} = Database
 
 proc newDatabase*(): Database 
   {.header: "xapian/database.h", constructor, importcpp: "Xapian::Database()".}
@@ -14,6 +19,13 @@ proc newDatabase*(path: CppString, flags: cint): Database
   {.header: "xapian/database.h", constructor, importcpp: "Xapian::Database(@)".}
 proc newDatabase*(fd: cint, flags: cint): Database
   {.header: "xapian/database.h", constructor, importcpp: "Xapian::Database(@)".}
+
+proc newWritableDatabase*(): WritableDatabase
+  {.header: "xapian/database.h", constructor, importcpp: "Xapian::WritableDatabase()".}
+proc newWritableDatabase*(path: CppString, flags: cint): WritableDatabase
+  {.header: "xapian/database.h", constructor, importcpp: "Xapian::WritableDatabase(@)".}
+proc newWritableDatabase*(fd: cint, flags: cint): WritableDatabase
+  {.header: "xapian/database.h", constructor, importcpp: "Xapian::WritableDatabase(@)".}
 
 proc addDatabase(this: Database, add: Database): void
   {.header: "xapian/database.h", importcpp: "#.add_database(@)".}
@@ -84,4 +96,84 @@ proc getUniqueTerms*(this: Database, did: DocId): TermCount
 proc keepAlive*(this: Database): void
   {.header: "xapian/database.h", importcpp: "#.keep_alive()".}
 
+proc getDocument*(this: Database, did: DocId): Document
+  {.header: "xapian/database.h", importcpp: "#.get_document(@)".}
+proc getDocument*(this: Database, did: DocId, flags: cuint): Document
+  {.header: "xapian/database.h", importcpp: "#.get_document(@)".}
 
+proc getSpellingSuggestion*(this: Database, word: CppString, distance: cuint = 2): CppString
+  {.header: "xapian/database.h", importcpp: "#.get_spelling_suggestion(@)".}
+
+proc spellingsBegin*(this: Database, term: CppString): TermIterator
+  {.header: "xapian/database.h", importcpp: "#.spellings_begin(@)".}
+proc spellingsEnd*(this: Database, term: CppString): TermIterator
+  {.header: "xapian/database.h", importcpp: "#.spellings_end(@)".}
+
+proc synonymKeysBegin*(this: Database, prefix: CppString = newCppString("")): TermIterator
+  {.header: "xapian/database.h", importcpp: "#.synonym_keys_begin(@)".}
+proc synonymKeysEnd*(this: Database, prefix: CppString = newCppString("")): TermIterator
+  {.header: "xapian/database.h", importcpp: "#.synonym_keys_end(@)".}
+
+proc getMetadata*(this: Database, key: CppString): CppString
+  {.header: "xapian/database.h", importcpp: "#.get_metadata(@)".}
+proc metadataKeysBegin*(this: Database, prefix: CppString = newCppString("")): TermIterator
+  {.header: "xapian/database.h", importcpp: "#.metadata_keys_begin(@)".}
+proc metadataKeysEnd*(this: Database, prefix: CppString = newCppString("")): TermIterator
+  {.header: "xapian/database.h", importcpp: "#.metadata_keys_end(@)".}
+
+proc getUuid*(this: Database): CppString 
+  {.header: "xapian/database.h", importcpp: "#.get_uuid()".}
+
+proc locked*(this: Database): bool
+  {.header: "xapian/database.h", importcpp: "#.locked()".}
+
+proc getRevision*(this: Database): Rev
+  {.header: "xapian/database.h", importcpp: "#.get_revision()".}
+
+proc check*(this: Database, path: CppString, opts: cint): cint
+  {.header: "xapian/database.h", importcpp: "#.check(@)".}
+proc check*(this: Database, fd: cint, opts: cint): cint
+  {.header: "xapian/database.h", importcpp: "#.check(@)".}
+
+proc compact*(this: Database, output: CppString, flags: cuint = 0, block_size: cint = 0): void
+  {.header: "xapian/database.h", importcpp: "#.compact(@)".}
+proc compact*(this: Database, fd: cint, flags: cuint = 0, block_size: cint = 0): void
+  {.header: "xapian/database.h", importcpp: "#.compact(@)".}
+proc compact*(this: Database, output: CppString, flags: cuint = 0, block_size: cint = 0, compactor: Compactor): void
+  {.header: "xapian/database.h", importcpp: "#.compact(@)".}
+proc compact*(this: Database, fd: cint, flags: cuint = 0, block_size: cint = 0, compactor: Compactor): void
+  {.header: "xapian/database.h", importcpp: "#.compact(@)".}
+
+proc commit*(this: WritableDatabase): void
+  {.header: "xapian/database.h", importcpp: "#.commit()".}
+proc beginTransaction*(this: WritableDatabase, flush: bool): void
+  {.header: "xapian/database.h", importcpp: "#.begin_transaction(@)".}
+proc commitTransation*(this: WritableDatabase): void
+  {.header: "xapian/database.h", importcpp: "#.commit_transaction()".}
+proc cancelTransation*(this: WritableDatabase): void
+  {.header: "xapian/database.h", importcpp: "#.cancel_transaction()".}
+
+proc addDocument*(this: WritableDatabase, document: Document): DocId
+  {.header: "xapian/database.h", importcpp: "#.add_document(@)".}
+proc removeDocument*(this: WritableDatabase, did: DocId): void
+  {.header: "xapian/database.h", importcpp: "#.delete_document(@)".}
+proc removeDocument*(this: WritableDatabase, term: CppString): void
+  {.header: "xapian/database.h", importcpp: "#.delete_document(@)".}
+proc replaceDocument*(this: WritableDatabase, did: DocId, document: Document): void
+  {.header: "xapian/database.h", importcpp: "#.replace_document(@)".}
+proc replaceDocument*(this: WritableDatabase, term: CppString, document: Document): void
+  {.header: "xapian/database.h", importcpp: "#.replace_document(@)".}
+
+proc addSpelling*(this: WritableDatabase, word: CppString, freq: cint = 1): void
+  {.header: "xapian/database.h", importcpp: "#.add_spelling(@)".}
+proc removeSpelling*(this: WritableDatabase, word: CppString, freq: cint = 1): void
+  {.header: "xapian/database.h", importcpp: "#.remove_spelling(@)".}
+
+proc addSynonym*(this: WritableDatabase, term: CppString, synonym: CppString): void
+  {.header: "xapian/database.h", importcpp: "#.add_synonym(@)".}
+proc removeSynonym*(this: WritableDatabase, term: CppString, synonym: CppString): void
+  {.header: "xapian/database.h", importcpp: "#.remove_synonym(@)".}
+proc clearSynonyms*(this: WritableDatabase, term: CppString): void
+  {.header: "xapian/database.h", importcpp: "#.clear_synonyms(@)".}
+proc setMetadata*(this: WritableDatabase, key: CppString, value: CppString): void
+  {.header: "xapian/database.h", importcpp: "#.set_metadata(@)".}
