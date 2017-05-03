@@ -13,7 +13,6 @@ type
   ESet* {.importcpp: "Xapian::ESet".} = object
   ESetIterator* {.importcpp: "Xapian::ESetIterator".} = object
 
-
 proc newESet(): ESet
   {.constructor, importcpp: "Xapian::ESet()".}
 proc newESetIterator(): ESetIterator
@@ -35,5 +34,20 @@ proc back*(this: ESet): ESetIterator
   {.importcpp: "#.back()".}
 proc getDescription*(this: ESet): CppString
   {.importcpp: "#.get_description()".}
+
+proc `==`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# == #".}
+proc `!=`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# != #".}
+proc `<`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# < #".}
+proc `>`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# > #".}
+proc `<=`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# <= #".}
+proc `>=`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# >= #".}
+proc `+`*(this: ESetIterator, other: ESetIterator): bool
+  {.importcpp: "# + #".}
 
 {.pop.}

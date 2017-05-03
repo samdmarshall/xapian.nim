@@ -1,8 +1,13 @@
 
-type
-  CppString* {.header: "string", importcpp: "std::string".} = object
+{.push header: "<string>".}
 
-proc newCppString*(str: cstring): CppString {.constructor, header: "string", importcpp: "std::string(@)".}
+type
+  CppString* {.importcpp: "std::string".} = object
+
+proc newCppString*(str: cstring): CppString 
+  {.constructor, importcpp: "std::string(@)".}
 
 proc `$`*(this: CppString): cstring
-  {.header: "string", importcpp: "#.c_str()".}
+  {.importcpp: "#.c_str()".}
+
+{.pop.}
